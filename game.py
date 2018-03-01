@@ -8,8 +8,9 @@ class Game:
 	white = (255, 255, 255)
 	black = (0, 0, 0)
 	red = (255, 0, 0)
+	green = (0, 155, 0)
 
-	fps = 30
+	fps = 60
 
 	block_size = 10
 
@@ -25,47 +26,86 @@ class Game:
 		self.change_x = self.block_size
 		self.change_y = 0
 		self.direction = 'r'
-		self.tail = 5
+		self.tail = 4
 		self.time = 0
 
-		self.apple_x = random.randrange(10, self.windowsize[0]-10)
-		self.apple_y = random.randrange(10, self.windowsize[1]-10)
+		self.randapple()
 		self.gameloop()
+
+	def startscreen(self):
+		intro = True
+
+		while intro:
+			self.screenwrap = False
+			self.gamedisplay.fill(self.black)
+			self.text_to_screen("Slither", color=self.green, size = 100)
+			
+			self.text_to_screen("C to play w/o screen wrap", 0, 55, self.white)
+			self.text_to_screen("V to play w/ screen wrap", 0, 80, self.white)
+			self.text_to_screen("Q to quit", 0, 105, self.white)
+			pygame.display.update()
+
+			for event in pygame.event.get():
+					if event.type == pygame.QUIT:
+						self.quitgame()
+					if event.type == pygame.KEYDOWN:
+						if event.key == pygame.K_q:
+							intro = False
+							self.quitgame()
+						if event.key == pygame.K_c:
+							intro = False
+							self.screenwrap = False
+							self.newgame()
+						if event.key == pygame.K_v:
+							self.screenwrap = True
+							intro = False
+							self.newgame()
+
+			self.clock.tick(self.fps/4)
+
+	def randapple(self):
+		self.apple_x = round(random.randrange(10, self.windowsize[0]-10)/10.0) * 10.0
+		self.apple_y = round(random.randrange(10, self.windowsize[1]-10)/10.0) * 10.0
 
 	def quitgame(self):
 		pygame.quit()
 		quit()
 
-	def text_objects(text, objects):
+	def text_objects(self, text, color=red, size=20, font_type='fonts/Courier New.ttf'):
 		text = str(text)
-	    font = pygame.font.Font(font_type, size)
+		font = pygame.font.Font(font_type, size)
 		textsurf = font.render(text, True, color)
+		return textsurf, textsurf.get_rect()
 
-	def text_to_screen(self, screen, text, x, y, color = red, size = 20, font_type = 'fonts/Courier New.ttf'):
-		textsurf, textrect = text_objects(text)
-		textrect.center = (windowsize[0]/2) , (windowsize[1]/2)
+	def text_to_screen(self, text, x_displace=0, y_displace=0, color=red, size=20):
+		textsurf, textrect = self.text_objects(text, color, size)
+		textrect.center = (self.windowsize[0]/2), (self.windowsize[1]/2) + y_displace
+		self.gamedisplay.blit(textsurf, textrect)
 
-	    
-	    
-	    screen.blit(textsurf, textrect)
-
-	def gameover(self, deathmessage):
+	def gameover(self):
 		self.gamedisplay.fill(self.black)
 		over = True
 		while over:
-			if event.type == pygame.QUIT:
-				self.quitgame()
-
-			self.text_to_screen(self.gamedisplay, deathmessage, self.windowsize[0]/8, self.windowsize[1]/2, self.red)
+			self.text_to_screen("Game Over", 0, -25, self.red, 80)
+			self.text_to_screen("C to play w/o screen wrap", 0, 55, self.white)
+			self.text_to_screen("V to play w/ screen wrap", 0, 80, self.white)
+			self.text_to_screen("Q to quit", 0, 105, self.white)
 			pygame.display.update()
 
 			for event in pygame.event.get():
+				if event.type == pygame.QUIT:
+					self.quitgame()
 				if event.type == pygame.KEYDOWN:
 					if event.key == pygame.K_q:
 						gameover = False
 						self.crashed = True
 						self.quitgame()
 					if event.key == pygame.K_c:
+						over = False
+						self.screenwrap = False
+						self.newgame()
+					if event.key == pygame.K_v:
+						self.screenwrap = True
 						over = False
 						self.newgame()
 
@@ -92,10 +132,23 @@ class Game:
 						self.change_y = self.block_size
 						self.change_x = 0
 						self.direction = 'd'
+					elif event.key == pygame.K_q:
+						self.crashed = True
+						self.quitgame()
 
 			# Border
-			if self.snake[0][0] >= self.windowsize[0] or self.snake[0][0] < 0 or self.snake[0][1] >= self.windowsize[1] or self.snake[0][1] < 0:
-				self.gameover("Game Over, press C to play again, or Q to quit")
+			if self.screenwrap:
+				if self.snake[0][0] > self.windowsize[0]:
+					self.snake[0][0] = 0
+				elif self.snake[0][0] < 0:
+					self.snake[0][0] = self.windowsize[0]
+				if self.snake[0][1] > self.windowsize[1]:
+					self.snake[0][1] = 0
+				elif self.snake[0][1] < 0:
+					self.snake[0][1] = self.windowsize[1]
+			else:
+				if self.snake[0][0] > self.windowsize[0] or self.snake[0][0] < 0 or self.snake[0][1] > self.windowsize[1] or self.snake[0][1] < 0:
+					self.gameover()
 
 			# Keep moving
 			'''
@@ -115,17 +168,16 @@ class Game:
 			self.gamedisplay.fill(self.black)
 			pygame.draw.rect(self.gamedisplay, self.red, [self.apple_x, self.apple_y, self.block_size, self.block_size])
 			
+			self.text_to_screen("Score: " + str(self.tail-4), -300, -280, self.white, 25)
+
 			# Display snake
 			for item in self.snake:
 				pygame.draw.rect(self.gamedisplay, self.white, [item[0], item[1], self.block_size, self.block_size])
 
 			if self.time > 100:
-				for item in self.snake:
+				for item in self.snake[1:]:
 					if item == self.snake[0]:
-						continue
-
-					if abs(self.snake[0][0] - item[0]) < self.block_size or abs(self.snake[0][1] - item[1]) < self.block_size:
-						self.gameover("Game Over, press C to play again, or Q to quit")
+						self.gameover()
 
 			pygame.display.update()
 
@@ -135,10 +187,9 @@ class Game:
 
 			# if eatapple
 			if abs(self.snake[0][0] - self.apple_x) < self.block_size*2 and abs(self.snake[0][1] - self.apple_y) < self.block_size*2:
-				self.apple_x = round(random.randrange(10, self.windowsize[0]-10)/10.0) * 10.0
-				self.apple_y = round(random.randrange(10, self.windowsize[1]-10)/10.0) * 10.0
+				self.randapple()
 
-				self.tail += 10
+				self.tail += 1
 
 			# tick clock @ fps
 			self.clock.tick(self.fps)

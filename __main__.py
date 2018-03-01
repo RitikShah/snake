@@ -11,4 +11,4 @@ Date: Feb 26 '18
 
 game = game.Game()
 
-game.newgame()
+game.startscreen()
