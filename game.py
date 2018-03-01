@@ -28,6 +28,7 @@ class Game:
 		self.direction = 'r'
 		self.tail = 4
 		self.time = 0
+		self.snakecolor = self.randcolor()
 
 		self.randapple()
 		self.gameloop()
@@ -62,6 +63,13 @@ class Game:
 							self.newgame()
 
 			self.clock.tick(self.fps/4)
+
+	def randcolor(self):
+		return (
+			round((random.randrange(0,255)+255)/2),
+			round((random.randrange(0,255)+255)/2),
+			round((random.randrange(0,255)+255)/2)
+		)
 
 	def randapple(self):
 		self.apple_x = round(random.randrange(10, self.windowsize[0]-10)/10.0) * 10.0
@@ -172,7 +180,7 @@ class Game:
 
 			# Display snake
 			for item in self.snake:
-				pygame.draw.rect(self.gamedisplay, self.white, [item[0], item[1], self.block_size, self.block_size])
+				pygame.draw.rect(self.gamedisplay, self.snakecolor, [item[0], item[1], self.block_size, self.block_size])
 
 			if self.time > 100:
 				for item in self.snake[1:]:
@@ -188,6 +196,7 @@ class Game:
 			# if eatapple
 			if abs(self.snake[0][0] - self.apple_x) < self.block_size*2 and abs(self.snake[0][1] - self.apple_y) < self.block_size*2:
 				self.randapple()
+				self.snakecolor = self.randcolor()
 
 				self.tail += 1
 
