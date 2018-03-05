@@ -26,7 +26,7 @@ class Game:
 		self.change_x = self.block_size
 		self.change_y = 0
 		self.direction = 'r'
-		self.tail = 4
+		self.tail = 5
 		self.time = 0
 		self.snakecolor = self.randcolor()
 
@@ -157,17 +157,6 @@ class Game:
 			else:
 				if self.snake[0][0] > self.windowsize[0] or self.snake[0][0] < 0 or self.snake[0][1] > self.windowsize[1] or self.snake[0][1] < 0:
 					self.gameover()
-
-			# Keep moving
-			'''
-			for i in range(len(self.snake)):
-				self.snake[0][0] += self.snake[0][1]
-				self.snake[1][0] += self.snake[1][1]
-
-				if i != 0:
-					self.snake[0][1] = self.snake[0][1]
-					self.snake[1][1] = self.snake[1][1]
-			'''
 
 			self.snake[0][0] += self.change_x
 			self.snake[0][1] += self.change_y
