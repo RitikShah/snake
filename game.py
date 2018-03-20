@@ -187,7 +187,7 @@ class Game:
 				self.randapple()
 				self.snakecolor = self.randcolor()
 
-				self.tail += 1
+				self.tail += 1	
 
 			# tick clock @ fps
 			self.clock.tick(self.fps)
